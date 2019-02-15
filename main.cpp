@@ -1,6 +1,6 @@
 #include <iostream>
 #include "UST10LX.h"
-
+#include "ObstacleFinder.h"
 
 void show(const std::array<int16_t,UST10LX::dataSize>& array)
 {
@@ -30,23 +30,31 @@ void show(const std::array<int16_t,UST10LX::dataSize>& array)
     std::cout << std::endl;
 }
 
+void demoDistance()
+{
 
-int main() {
     UST10LX LiDAR = UST10LX();
     LiDAR.connect("192.168.0.10");
-    LiDAR.scan();
-
-    const std::array<int16_t,UST10LX::dataSize>& scan = LiDAR.getScan();
-//    for(int16_t distance: scan)
-//    {
-//        std::cout << distance << ", ";
-//    }
-//    std::cout << std::endl;
 
     while(true)
     {
         LiDAR.scan();
         show(LiDAR.getScan());
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+
+}
+
+int main() {
+    UST10LX LiDAR = UST10LX();
+    LiDAR.connect("192.168.0.10");
+
+    ObstacleFinder finder = ObstacleFinder(UST10LX::dataError);
+
+    while(true)
+    {
+        LiDAR.scan();
+        std::cout << finder.toString(finder.findObstacles(LiDAR.getDataPoints())) << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 

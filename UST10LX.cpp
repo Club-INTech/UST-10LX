@@ -8,6 +8,11 @@
 UST10LX::UST10LX()
 {
     m_socketID = -1;
+    m_dataPointScan.reserve(dataSize);
+    for(int i=0;i<dataSize;i++)
+    {
+        m_dataPointScan.push_back(DataPoint{0,0});
+    }
 }
 
 
@@ -40,7 +45,7 @@ void UST10LX::connect(const std::string& ip)
     m_socketDescriptor.sin_addr.s_addr = inet_addr(ip.c_str());
 
     // Connect TCP socket
-    if(!::connect(m_socketID,reinterpret_cast<sockaddr*>(&m_socketDescriptor),sizeof(m_socketDescriptor)))
+    if(::connect(m_socketID,reinterpret_cast<sockaddr*>(&m_socketDescriptor),sizeof(m_socketDescriptor)))
     {
         m_socketID = -1;
         std::cerr << "Connection failed !" << std::endl;
@@ -54,6 +59,12 @@ void UST10LX::connect(const std::string& ip)
     read();
 }
 
+/**
+ * The LiDAR performs a 270° scan. The data is then received, stripped of line feeds, checksums and control data then
+ * decoded. At the same time, the distance data is stored along with the corresponding angles in radians.
+ * @brief Perform a distance scan and retrieve data
+ * @return true if scan was successful
+ */
 bool UST10LX::scan()
 {
     // Perform a 270° scan
@@ -101,7 +112,8 @@ bool UST10LX::scan()
      *****************/
 
     m_lastScan.fill(-1);
-    auto insertPosition = m_lastScan.begin();
+    auto insertDistancePosition = m_lastScan.begin();
+    auto insertDataPointPosition = m_dataPointScan.begin();
 
     // Loop through 3-bytes block, each one being an encoded data point
     for(uint16_t i = 0;i<m_recieveBuffer.size();i+=3)
@@ -114,8 +126,12 @@ bool UST10LX::scan()
             tmpValue = dataError;
         }
 
-        *insertPosition = tmpValue;
-        ++insertPosition;
+        *insertDistancePosition = tmpValue;
+        ++insertDistancePosition;
+
+        insertDataPointPosition->distance = tmpValue;
+        insertDataPointPosition->angle = ((i/3.0f)*0.25f)*degreeToRadian;
+        ++insertDataPointPosition;
     }
 
     return(true);
@@ -136,6 +152,11 @@ int16_t UST10LX::charDecode(uint16_t start, uint8_t charLength)
 const std::array<int16_t, UST10LX::dataSize>& UST10LX::getScan()
 {
     return(m_lastScan);
+}
+
+const std::vector<DataPoint>& UST10LX::getDataPoints()
+{
+    return(m_dataPointScan);
 }
 
 uint16_t UST10LX::read(uint16_t bytesToRead)
@@ -171,7 +192,8 @@ uint16_t UST10LX::read(uint16_t bytesToRead)
     return(bytesRead);
 }
 
-bool UST10LX::write(const std::string& message) {
+bool UST10LX::write(const std::string& message)
+{
     if(m_socketID == -1)
     {
         return(false);
