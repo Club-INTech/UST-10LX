@@ -13,7 +13,7 @@ UST10LX::UST10LX()
 
 UST10LX::~UST10LX()
 {
-    if(this)
+    if(m_socketID != -1)
     {
         std::string stopMeasures = "QT\n";
 
@@ -40,7 +40,12 @@ void UST10LX::connect(const std::string& ip)
     m_socketDescriptor.sin_addr.s_addr = inet_addr(ip.c_str());
 
     // Connect TCP socket
-    ::connect(m_socketID,reinterpret_cast<sockaddr*>(&m_socketDescriptor),sizeof(m_socketDescriptor));
+    if(!::connect(m_socketID,reinterpret_cast<sockaddr*>(&m_socketDescriptor),sizeof(m_socketDescriptor)))
+    {
+        m_socketID = -1;
+        std::cerr << "Connection failed !" << std::endl;
+        return;
+    }
 
     // Wait a bit then start measurements
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -70,7 +75,7 @@ bool UST10LX::scan()
 
     // Look for the end of the response
     size_t foundPosition = m_recieveBuffer.find("\n\n");
-    if(foundPosition == m_recieveBuffer.npos)       // If not found, return false
+    if(foundPosition == std::string::npos)       // If not found, return false
     {
         return(false);
     }
@@ -85,7 +90,7 @@ bool UST10LX::scan()
     }
 
     foundPosition = m_recieveBuffer.find('\n');     // Look for line feeds
-    while(foundPosition != m_recieveBuffer.npos)
+    while(foundPosition != std::string::npos)
     {
         m_recieveBuffer.erase(foundPosition-1,2);   // While there are...
         foundPosition = m_recieveBuffer.find('\n'); // ... remove them and the preceding checksums
@@ -135,7 +140,7 @@ const std::array<int16_t, UST10LX::dataSize>& UST10LX::getScan()
 
 uint16_t UST10LX::read(uint16_t bytesToRead)
 {
-    if(!this)
+    if(m_socketID == -1)
     {
         return(0);
     }
@@ -167,7 +172,7 @@ uint16_t UST10LX::read(uint16_t bytesToRead)
 }
 
 bool UST10LX::write(const std::string& message) {
-    if(!this)
+    if(m_socketID == -1)
     {
         return(false);
     }

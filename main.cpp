@@ -36,7 +36,7 @@ int main() {
     LiDAR.connect("192.168.0.10");
     LiDAR.scan();
 
-//    std::array<int16_t,UST10LX::dataSize>& scan = LiDAR.getScan();
+    const std::array<int16_t,UST10LX::dataSize>& scan = LiDAR.getScan();
 //    for(int16_t distance: scan)
 //    {
 //        std::cout << distance << ", ";
