@@ -71,8 +71,7 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
  * String is formed by concatenation of all obstacles separated by a ObstacleFinder::pointSeparator.
  * Different sets of coordinates are separated by a ObstacleFinder::coordinatesSeparator
  * @brief Converts obstacle vector to a string which can be sent to the High Level
- * @param dataToConvert
- * @return Data converted to a string which can be sent
+ * @param dataToConvert vector of DataPoints that will be converted to std::string
  */
 void ObstacleFinder::toString(std::string& dataString,const std::vector<DataPoint>& dataToConvert)
 {
@@ -86,5 +85,17 @@ void ObstacleFinder::toString(std::string& dataString,const std::vector<DataPoin
     }
 
     dataString.pop_back();
+}
+
+/**
+ * @brief Overload returning a string
+ * @sa ObstacleFinder::toString(std::string&,const std::vector<DataPoint>&)
+ * @param dataToConvert
+ * @return Data converted to a string which can be sent
+ */
+std::string ObstacleFinder::toString(const std::vector<DataPoint>& dataToConvert) {
+    std::string dataString;
+    toString(dataString,dataToConvert);
+    return dataString;
 }
 
