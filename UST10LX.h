@@ -18,6 +18,7 @@
 #include <chrono>
 #include <thread>
 #include <math.h>
+#include <string.h>
 
 #include "DataPoint.h"
 
@@ -62,7 +63,7 @@ private:
     int m_socketID;
     sockaddr_in m_socketDescriptor;
 
-    std::string m_recieveBuffer;
+    std::string m_receiveBuffer;
     std::array<int16_t,dataSize> m_lastScan;
 
     std::vector<DataPoint> m_dataPointScan;

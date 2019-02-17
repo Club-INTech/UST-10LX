@@ -48,7 +48,8 @@ void UST10LX::connect(const std::string& ip)
     if(::connect(m_socketID,reinterpret_cast<sockaddr*>(&m_socketDescriptor),sizeof(m_socketDescriptor)))
     {
         m_socketID = -1;
-        std::cerr << "Connection failed !" << std::endl;
+        std::cerr << "Connection to UST10LX on address " << ip << " failed !" << std::endl;
+        std::cerr << strerror(errno) << std::endl;
         return;
     }
 
@@ -85,26 +86,26 @@ bool UST10LX::scan()
      ***********************/
 
     // Look for the end of the response
-    size_t foundPosition = m_recieveBuffer.find("\n\n");
+    size_t foundPosition = m_receiveBuffer.find("\n\n");
     if(foundPosition == std::string::npos)       // If not found, return false
     {
         return(false);
     }
-    m_recieveBuffer.erase(foundPosition-1,3);       // If it is, remove it and the preceding checksum
+    m_receiveBuffer.erase(foundPosition-1,3);       // If it is, remove it and the preceding checksum
 
 
     // Keep only the data part of the answer
-    m_recieveBuffer.erase(0,23);
-    if(m_recieveBuffer.empty())                     // If there was not enough data, the scan failed
+    m_receiveBuffer.erase(0,23);
+    if(m_receiveBuffer.empty())                     // If there was not enough data, the scan failed
     {                                               // So return false
         return(false);
     }
 
-    foundPosition = m_recieveBuffer.find('\n');     // Look for line feeds
+    foundPosition = m_receiveBuffer.find('\n');     // Look for line feeds
     while(foundPosition != std::string::npos)
     {
-        m_recieveBuffer.erase(foundPosition-1,2);   // While there are...
-        foundPosition = m_recieveBuffer.find('\n'); // ... remove them and the preceding checksums
+        m_receiveBuffer.erase(foundPosition-1,2);   // While there are...
+        foundPosition = m_receiveBuffer.find('\n'); // ... remove them and the preceding checksums
     }
 
     /*****************
@@ -116,7 +117,7 @@ bool UST10LX::scan()
     auto insertDataPointPosition = m_dataPointScan.begin();
 
     // Loop through 3-bytes block, each one being an encoded data point
-    for(uint16_t i = 0;i<m_recieveBuffer.size();i+=3)
+    for(uint16_t i = 0;i<m_receiveBuffer.size();i+=3)
     {
         int16_t tmpValue = charDecode(i,3);
 
@@ -140,7 +141,7 @@ bool UST10LX::scan()
 int16_t UST10LX::charDecode(uint16_t start, uint8_t charLength)
 {
     int16_t value = 0;
-    auto position = m_recieveBuffer.begin() + start;
+    auto position = m_receiveBuffer.begin() + start;
     for(int i = 0;i<charLength;i++)
     {
         value += (*position-0x30) << 6*(charLength-i-1);
@@ -168,14 +169,14 @@ uint16_t UST10LX::read(uint16_t bytesToRead)
 
     uint16_t bytesRead = 0;
     char tmpChar = '\0', oldTmpChar ='\0';
-    m_recieveBuffer.clear();
+    m_receiveBuffer.clear();
 
     if(bytesToRead)
     {
         while(bytesRead<bytesToRead)
         {
             bytesRead += ::read(m_socketID,&tmpChar,1);
-            m_recieveBuffer.push_back(tmpChar);
+            m_receiveBuffer.push_back(tmpChar);
         }
     }
     else
@@ -185,7 +186,7 @@ uint16_t UST10LX::read(uint16_t bytesToRead)
         {
             oldTmpChar = tmpChar;
             bytesRead += ::read(m_socketID,&tmpChar,1);
-            m_recieveBuffer.push_back(tmpChar);
+            m_receiveBuffer.push_back(tmpChar);
         }
     }
 
