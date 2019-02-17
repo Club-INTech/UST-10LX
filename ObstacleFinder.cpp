@@ -68,7 +68,7 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
 }
 
 /**
- * String is formed by concatenation of all similar coordinates separated by a ObstacleFinder::pointSeparator.
+ * String is formed by concatenation of all obstacles separated by a ObstacleFinder::pointSeparator.
  * Different sets of coordinates are separated by a ObstacleFinder::coordinatesSeparator
  * @brief Converts obstacle vector to a string which can be sent to the High Level
  * @param dataToConvert
@@ -76,21 +76,17 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
  */
 std::string ObstacleFinder::toString(const std::vector<DataPoint>& dataToConvert)
 {
-    std::string radii;
-    std::string angles;
+    std::string returnString;
     for(const DataPoint& point: dataToConvert)
     {
-        radii += std::to_string(point.distance);
-        radii += pointSeparator;
-        angles += std::to_string(point.angle);
-        angles += pointSeparator;
+        returnString += std::to_string(point.distance);
+        returnString += coordinatesSeparator;
+        returnString += std::to_string(point.angle);
+        returnString += pointSeparator;
     }
 
-    radii.pop_back();
-    angles.pop_back();
+    returnString.pop_back();
 
-    radii += coordinatesSeparator;
-    radii += angles;
-    return (radii);
+    return (returnString);
 }
 

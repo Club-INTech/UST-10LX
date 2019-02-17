@@ -22,7 +22,7 @@ private:
     /// Separates coordinates of two points
     static constexpr char pointSeparator = ';';
     /// Separates two sets of coordinates
-    static constexpr char coordinatesSeparator = ' ';
+    static constexpr char coordinatesSeparator = ':';
 
 public:
     explicit ObstacleFinder(int16_t);
