@@ -114,14 +114,13 @@ int main() {
     ObstacleFinder finder = ObstacleFinder(UST10LX::dataError);
 
     // Start scanning and sending data to high level
-    LiDAR.scan();
-    std::string dataOutput = ObstacleFinder::toString(finder.findObstacles(LiDAR.getDataPoints()));
+    std::string dataOutput;
     while(true)
     {
+        LiDAR.scan();
+        ObstacleFinder::toString(dataOutput,finder.findObstacles(LiDAR.getDataPoints()));
         write(highLevelSocket,dataOutput.c_str(),dataOutput.length());
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        LiDAR.scan();
-        dataOutput = ObstacleFinder::toString(finder.findObstacles(LiDAR.getDataPoints()));
     }
 
 

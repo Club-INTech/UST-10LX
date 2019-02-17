@@ -29,7 +29,7 @@ public:
 
     const std::vector<DataPoint>& findObstacles(const std::vector<DataPoint>&);
 
-    static std::string toString(const std::vector<DataPoint>&);
+    static void toString(std::string&,const std::vector<DataPoint>&);
 };
 
 

@@ -74,19 +74,17 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
  * @param dataToConvert
  * @return Data converted to a string which can be sent
  */
-std::string ObstacleFinder::toString(const std::vector<DataPoint>& dataToConvert)
+void ObstacleFinder::toString(std::string& dataString,const std::vector<DataPoint>& dataToConvert)
 {
-    std::string returnString;
+    dataString.clear();
     for(const DataPoint& point: dataToConvert)
     {
-        returnString += std::to_string(point.distance);
-        returnString += coordinatesSeparator;
-        returnString += std::to_string(point.angle);
-        returnString += pointSeparator;
+        dataString += std::to_string(point.distance);
+        dataString += coordinatesSeparator;
+        dataString += std::to_string(point.angle);
+        dataString += pointSeparator;
     }
 
-    returnString.pop_back();
-
-    return (returnString);
+    dataString.pop_back();
 }
 
