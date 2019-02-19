@@ -94,8 +94,9 @@ int main() {
     int highLevelSocket = highLevelConnect("127.0.0.1",17865);
 
 
-    // Create a UST10-LX object then try to connect to it
-    UST10LX LiDAR = UST10LX();
+    // Create a UST10-LX object with a -135° offset then try to connect to it
+    // -135° aligns the forward direction of the robot with 0°
+    UST10LX LiDAR = UST10LX(-135);
 
     std::cout << "Trying to connect to UST10LX" << std::endl;
     LiDAR.connect("192.168.0.10");

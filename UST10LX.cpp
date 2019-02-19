@@ -4,8 +4,11 @@
 
 #include "UST10LX.h"
 
-
-UST10LX::UST10LX()
+/**
+ * Constructor with optional argument to set angle offset
+ * @param angleOffset optional, in °. Sets the offset between measured angle and returned angle
+ */
+UST10LX::UST10LX(int16_t angleOffset) : m_angleOffset(angleOffset)
 {
     m_socketID = -1;
     m_dataPointScan.reserve(dataSize);
@@ -131,7 +134,7 @@ bool UST10LX::scan()
         ++insertDistancePosition;
 
         insertDataPointPosition->distance = tmpValue;
-        insertDataPointPosition->angle = ((i/3.0f)*0.25f)*degreeToRadian;
+        insertDataPointPosition->angle = ((i/3.0f)*0.25f+m_angleOffset)*degreeToRadian;
         ++insertDataPointPosition;
     }
 

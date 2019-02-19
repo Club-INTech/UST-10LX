@@ -4,6 +4,8 @@
 
 #include "ObstacleFinder.h"
 
+const std::string ObstacleFinder::headerString = {0x21,0x21};
+
 ObstacleFinder::ObstacleFinder(int16_t invalidDistance)
 {
     this->invalidDistance = invalidDistance;
@@ -76,6 +78,7 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
 void ObstacleFinder::toString(std::string& dataString,const std::vector<DataPoint>& dataToConvert)
 {
     dataString.clear();
+    dataString.append(headerString);
     for(const DataPoint& point: dataToConvert)
     {
         dataString += std::to_string(point.distance);
@@ -85,6 +88,7 @@ void ObstacleFinder::toString(std::string& dataString,const std::vector<DataPoin
     }
 
     dataString.pop_back();
+    dataString.append("\n");
 }
 
 /**

@@ -34,7 +34,7 @@ public:
     /// Erroneous data point value
     static constexpr int16_t dataError = -1;
 
-    UST10LX();
+    explicit UST10LX(int16_t = 0);
     ~UST10LX();
 
     void connect(const std::string&);
@@ -59,6 +59,9 @@ private:
 
     /// In mm ; Distance above which a point is considered to be at infinity
     static constexpr uint16_t maxDistance = 3000;
+
+    /// In ° : Offset applied to the angle detected by the LiDAR
+    const int16_t m_angleOffset;
 
     int m_socketID;
     sockaddr_in m_socketDescriptor;

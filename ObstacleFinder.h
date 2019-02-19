@@ -23,6 +23,8 @@ private:
     static constexpr char pointSeparator = ';';
     /// Separates two sets of coordinates
     static constexpr char coordinatesSeparator = ':';
+    /// Communication header inserted before the string
+    static const std::string headerString;
 
 public:
     explicit ObstacleFinder(int16_t);
