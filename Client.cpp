@@ -6,9 +6,14 @@
 
 const std::string Client::headerString = {0x21,0x21};
 
-Client::Client()
+Client::Client() : Client("127.0.0.1",17865)
+{}
+
+Client::Client(const std::string& serverIp, uint16_t serverPort)
 {
     m_clientSocket = -1;
+    m_serverAddress = serverIp;
+    m_serverPort = serverPort;
 }
 
 Client::~Client()
@@ -26,7 +31,7 @@ Client::~Client()
  * @param serverPort Port the client will connect to
  * @return Socket ID of high level if connection was successful
  */
-bool Client::connect(const std::string& serverAddress, uint16_t serverPort)
+bool Client::connect()
 {
     // Setup the server socket
     int serverSocket = socket(AF_INET,SOCK_STREAM,IPPROTO_IP);
@@ -42,8 +47,8 @@ bool Client::connect(const std::string& serverAddress, uint16_t serverPort)
     // Configure the server socket
     sockaddr_in serverSocketDescriptor{};
     serverSocketDescriptor.sin_family = AF_INET;
-    serverSocketDescriptor.sin_port = htons(serverPort);
-    serverSocketDescriptor.sin_addr.s_addr = inet_addr(serverAddress.c_str());
+    serverSocketDescriptor.sin_port = htons(m_serverPort);
+    serverSocketDescriptor.sin_addr.s_addr = inet_addr(m_serverAddress.c_str());
 
     // Set socket options to force address and port reuse if possible
     // Avoids "Address already in use" errors when binding
@@ -59,7 +64,7 @@ bool Client::connect(const std::string& serverAddress, uint16_t serverPort)
     // Bind the socket to the configured address and port
     if(bind(serverSocket,reinterpret_cast<sockaddr*>(&serverSocketDescriptor),sizeof(serverSocketDescriptor)) < 0)
     {
-        std::cerr << "Could not bind socket to address " << serverAddress << ":" << serverPort << std::endl;
+        std::cerr << "Could not bind socket to address " << m_serverAddress << ":" << m_serverPort << std::endl;
         std::cerr << strerror(errno) << std::endl;
         return(false);
     }
@@ -76,7 +81,7 @@ bool Client::connect(const std::string& serverAddress, uint16_t serverPort)
 
 
     // If there is an inbound connection, accept the connection and retrieve the client socket
-    std::cout << "Waiting for connection on address " << serverAddress << ":" << serverPort << std::endl;
+    std::cout << "Waiting for connection on address " << m_serverAddress << ":" << m_serverPort << std::endl;
     int clientSocket = accept(serverSocket, nullptr, nullptr);
 
     // If connection failed, try until a connection is established

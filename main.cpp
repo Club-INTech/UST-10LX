@@ -15,8 +15,8 @@
 int main() {
 
     // Connect to high level
-    Client highLevel = Client();
-    highLevel.connect("127.0.0.1",17865);
+    Client highLevel = Client("127.0.0.1",17865);
+    highLevel.connect();
 
     // Create a UST10-LX object with a -135° offset then try to connect to it
     // -135° aligns the forward direction of the robot with 0°
@@ -51,7 +51,7 @@ int main() {
         if(!highLevel)
         {
             std::cout << "Waiting for a new client..." << std::endl;
-            highLevel.connect("127.0.0.1",17865);
+            highLevel.connect();
         }
     }
 

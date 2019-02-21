@@ -21,8 +21,9 @@
 class Client {
 public:
     Client();
+    Client(const std::string&, uint16_t);
     ~Client();
-    bool connect(const std::string&, uint16_t);
+    bool connect();
 
     bool send(const std::string&);
 
@@ -40,6 +41,8 @@ private:
     static const std::string headerString;
 
     int m_clientSocket;
+    std::string m_serverAddress;
+    uint16_t m_serverPort;
 };
 
 
