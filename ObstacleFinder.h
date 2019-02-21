@@ -19,20 +19,10 @@ private:
 
     std::vector<DataPoint> obstacles;
 
-    /// Separates coordinates of two points
-    static constexpr char pointSeparator = ';';
-    /// Separates two sets of coordinates
-    static constexpr char coordinatesSeparator = ':';
-    /// Communication header inserted before the string
-    static const std::string headerString;
-
 public:
     explicit ObstacleFinder(int16_t);
 
     const std::vector<DataPoint>& findObstacles(const std::vector<DataPoint>&);
-
-    static void toString(std::string&,const std::vector<DataPoint>&);
-    static std::string toString(const std::vector<DataPoint>&);
 };
 
 

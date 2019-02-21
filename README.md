@@ -9,3 +9,4 @@ This LiDAR is a loan from [MADoPA association](http://www.madopa.fr/) (*French*)
 ## Setup
 
 The setup is very minimal : the interface on which the LiDAR connects must be correctly configured (192.168.0.0/24 subnet by default) and that's pretty much it!
+You can change the values in the main function and in the different header files to suit your needs.

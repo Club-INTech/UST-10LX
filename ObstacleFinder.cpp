@@ -4,7 +4,6 @@
 
 #include "ObstacleFinder.h"
 
-const std::string ObstacleFinder::headerString = {0x21,0x21};
 
 ObstacleFinder::ObstacleFinder(int16_t invalidDistance)
 {
@@ -68,38 +67,3 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
 
     return(obstacles);
 }
-
-/**
- * String is formed by concatenation of all obstacles separated by a ObstacleFinder::pointSeparator.
- * Different sets of coordinates are separated by a ObstacleFinder::coordinatesSeparator
- * @brief Converts obstacle vector to a string which can be sent to the High Level
- * @param dataToConvert vector of DataPoints that will be converted to std::string
- */
-void ObstacleFinder::toString(std::string& dataString,const std::vector<DataPoint>& dataToConvert)
-{
-    dataString.clear();
-    dataString.append(headerString);
-    for(const DataPoint& point: dataToConvert)
-    {
-        dataString += std::to_string(point.distance);
-        dataString += coordinatesSeparator;
-        dataString += std::to_string(point.angle);
-        dataString += pointSeparator;
-    }
-
-    dataString.pop_back();
-    dataString.append("\n");
-}
-
-/**
- * @brief Overload returning a string
- * @sa ObstacleFinder::toString(std::string&,const std::vector<DataPoint>&)
- * @param dataToConvert
- * @return Data converted to a string which can be sent
- */
-std::string ObstacleFinder::toString(const std::vector<DataPoint>& dataToConvert) {
-    std::string dataString;
-    toString(dataString,dataToConvert);
-    return dataString;
-}
-
