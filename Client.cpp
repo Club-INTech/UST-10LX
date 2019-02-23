@@ -4,7 +4,8 @@
 
 #include "Client.h"
 
-const std::string Client::headerString = {0x21,0x21};
+const std::string Client::messageHeader = {0x21,0x21};
+const std::string Client::messageTerminator = "\n";
 
 Client::Client() : Client("127.0.0.1",17865)
 {}
@@ -40,6 +41,7 @@ bool Client::connect()
     {
         std::cerr << "Could not open server socket" << std::endl;
         std::cerr << strerror(errno) << std::endl;
+        errno = 0;      // Reset errno after error processing
         return(false);
     }
 
@@ -57,6 +59,7 @@ bool Client::connect()
     {
         std::cerr << "Could not set socket options" << std::endl;
         std::cerr << strerror(errno) << std::endl;
+        errno = 0;
         return(false);
     }
 
@@ -66,6 +69,7 @@ bool Client::connect()
     {
         std::cerr << "Could not bind socket to address " << m_serverAddress << ":" << m_serverPort << std::endl;
         std::cerr << strerror(errno) << std::endl;
+        errno = 0;
         return(false);
     }
 
@@ -76,6 +80,7 @@ bool Client::connect()
     {
         std::cerr << "Could not start listening on socket" << std::endl;
         std::cerr << strerror(errno) << std::endl;
+        errno = 0;
         return(false);
     }
 
@@ -116,29 +121,104 @@ bool Client::send(const std::string& message)
     // If the pipe is broken or the write failed, disconnect properly
     if(signal(SIGPIPE,SIG_IGN) == SIG_ERR || sentBytes < 0)
     {
-        std::cerr << "Client disconnected !" << std::endl;
-        std::cerr << strerror(errno) << std::endl;
-        errno = 0;
-
-        shutdown(m_clientSocket,SHUT_RDWR);
-        close(m_clientSocket);
-        m_clientSocket = -1;
+        clientDisconnect();
         return(false);
     }
 
     return(true);
 }
 
+
 /**
- * String is formed by concatenation of all obstacles separated by a ObstacleFinder::pointSeparator.
- * Different sets of coordinates are separated by a ObstacleFinder::coordinatesSeparator
+ * Receives data from client returned in receivedMessage. Reception can be non-blocking and will return false
+ * at once if no data is available on function call.<br>
+ * Message header and terminator are checked and stripped if valid <br>
+ * receivedMessage is cleared on function call and can be returned empty.
+ * @param receivedMessage : String in which data is returned (If there is any)
+ * @param isBlocking : Allow for non-blocking read
+ * @return false if there was an error or no data to read if read was non-blocking
+ */
+bool Client::receive(std::string& receivedMessage, bool isBlocking)
+{
+    receivedMessage.clear();
+
+    if(m_clientSocket < 0)
+    {
+        return(false);
+    }
+
+    int blockingFlag;
+    isBlocking ? blockingFlag = 0 : blockingFlag = MSG_DONTWAIT;   // Set the flag according to parameter
+
+    char receptionBuffer[bufferSize];
+
+
+    // Try to receive data
+    ssize_t receivedLength = ::recv(m_clientSocket,receptionBuffer,bufferSize,blockingFlag);
+
+    // If reception failed ...
+    if(receivedLength < 0)
+    {
+        // ... check if it was expected (Non blocking socket that would block) or if there was an unexpected error
+        if(isBlocking || !(errno & (EWOULDBLOCK | EAGAIN )) )
+        {
+            // If it was unexpected, print an error message
+            std::cerr << "Error while trying to read from address " << m_serverAddress << ":" << m_serverPort << std::endl;
+            std::cerr << strerror(errno) << std::endl;
+        }
+        errno = 0;
+        return(false);
+    }
+    else if(receivedLength == 0) // Or, if we received a zero-length message, consider that the client disconnected
+    {
+        errno = ECONNRESET;
+        clientDisconnect();
+        return(false);
+    }
+
+    // Copy received data to the output string
+    receivedMessage.assign(receptionBuffer,(uint16_t)receivedLength);
+
+    // Check if the message has a valid header and terminator
+    if(receivedMessage.find(messageHeader) != 0 ||
+       receivedMessage.rfind(messageTerminator) != receivedLength - messageTerminator.length())
+    {
+        std::cerr << "Invalid message received" << std::endl;
+        return(false);
+    }
+
+    // Strip the message from header and terminator
+    receivedMessage = receivedMessage.substr(messageHeader.length(),
+            receivedLength-messageHeader.length()-messageTerminator.length());
+
+    return(true);
+}
+
+
+void Client::clientDisconnect()
+{
+    std::cerr << "Client disconnected !" << std::endl;
+    std::cerr << strerror(errno) << std::endl;
+    errno = 0;
+
+    shutdown(m_clientSocket,SHUT_RDWR);
+    close(m_clientSocket);
+    m_clientSocket = -1;
+}
+
+
+
+/**
+ * String is formed by concatenation of all obstacles separated by a ObstacleFinder::pointSeparator.<br>
+ * Different sets of coordinates are separated by a ObstacleFinder::coordinatesSeparator<br>
+ * Message header and terminator are inserted at the beginning and at the end respectively
  * @brief Converts obstacle vector to a string which can be sent to the High Level
  * @param dataToConvert vector of DataPoints that will be converted to std::string
  */
 void Client::dataToString(std::string& dataString,const std::vector<DataPoint>& dataToConvert)
 {
     dataString.clear();
-    dataString.append(headerString);
+    dataString.append(messageHeader);
     for(const DataPoint& point: dataToConvert)
     {
         dataString += std::to_string(point.distance);
@@ -148,7 +228,7 @@ void Client::dataToString(std::string& dataString,const std::vector<DataPoint>& 
     }
 
     dataString.pop_back();      // Removes the last pointSeparator
-    dataString.append("\n");
+    dataString.append(messageTerminator);
 }
 
 /**

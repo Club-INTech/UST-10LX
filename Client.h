@@ -26,6 +26,7 @@ public:
     bool connect();
 
     bool send(const std::string&);
+    bool receive(std::string&,bool = true);
 
     explicit operator bool();
 
@@ -37,12 +38,19 @@ private:
     static constexpr char pointSeparator = ';';
     /// Separates two sets of coordinates
     static constexpr char coordinatesSeparator = ':';
-    /// Communication header inserted before the string
-    static const std::string headerString;
+    /// Communication header inserted before the message
+    static const std::string messageHeader;
+    /// Communication terminator appended after the message
+    static const std::string messageTerminator;
+
+    /// Size of reception buffer
+    static constexpr uint16_t bufferSize = 100;
 
     int m_clientSocket;
     std::string m_serverAddress;
     uint16_t m_serverPort;
+
+    void clientDisconnect();
 };
 
 

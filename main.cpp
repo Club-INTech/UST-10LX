@@ -12,6 +12,13 @@
 #include "Client.h"
 
 
+/// Define different ways of sending data to the high level
+enum class communicationMode
+{
+    RAW,        /**< Send raw DataPoints , without processing   */
+    OBSTACLES,  /**< Send obstacle positions                    */
+};
+
 int main() {
 
     // Connect to high level
@@ -38,14 +45,44 @@ int main() {
 
     ObstacleFinder finder = ObstacleFinder(UST10LX::dataError);
 
-    // Start scanning and sending data to high level
     std::string dataOutput;
+    std::string messageInput;
+    communicationMode mode = communicationMode::OBSTACLES;
+    // Start scanning and sending data to high level
     while(true)
     {
         LiDAR.scan();
-        Client::dataToString(dataOutput,finder.findObstacles(LiDAR.getDataPoints()));
+
+        switch(mode)
+        {
+            case communicationMode::RAW:
+                Client::dataToString(dataOutput,LiDAR.getDataPoints());
+                break;
+            case communicationMode::OBSTACLES:
+                Client::dataToString(dataOutput,finder.findObstacles(LiDAR.getDataPoints()));
+        }
+
         highLevel.send(dataOutput);
+
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+        // Read eventual incoming messages and change mode accordingly
+        if(highLevel.receive(messageInput,false))
+        {
+            if(messageInput == "R")
+            {
+                mode = communicationMode::RAW;
+            }
+            else if(messageInput == "O")
+            {
+                mode = communicationMode::OBSTACLES;
+            }
+            else
+            {
+                std::cout << "Unrecognized message" << std::endl;
+                std::cout << messageInput << std::endl;
+            }
+        }
 
         // In the event of a disconnection, stop sending and try to reconnect
         if(!highLevel)
