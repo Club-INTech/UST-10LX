@@ -5,9 +5,10 @@
 #include "ObstacleFinder.h"
 
 
-ObstacleFinder::ObstacleFinder(int16_t invalidDistance)
+ObstacleFinder::ObstacleFinder(int16_t invalidDistance, uint16_t maxWidth)
 {
     this->invalidDistance = invalidDistance;
+    maxObstacleWidth = maxWidth;
 }
 
 /**
@@ -39,6 +40,24 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
         else if(dataPoints.at(i).distance != invalidDistance && inObstacle)     // If we are in an obstacle and there is valid data
         {
             totalDistance += dataPoints.at(i).distance;                         // Add the distance to the current sum
+
+            if(i-startIndex == maxObstacleWidth)                                // If the obstacle is too large, split it
+            {
+                endIndex = i;
+
+                // Compute the mean of the start and end angles
+                float meanAngle = (dataPoints.at(startIndex).angle+dataPoints.at(endIndex).angle)/2.0f;
+
+                // Compute the mean of the distances
+                int16_t meanDistance = totalDistance/(endIndex-startIndex);
+
+                // Add them to distance vector
+                obstacles.push_back(DataPoint{meanAngle,meanDistance});
+
+                // Start a new obstacle right away
+                startIndex = i;
+                totalDistance = 0;
+            }
         }
         else if(dataPoints.at(i).distance == invalidDistance && inObstacle)     // If there is no more valid data ...
         {

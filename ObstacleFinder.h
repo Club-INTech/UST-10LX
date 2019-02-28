@@ -16,11 +16,12 @@ class ObstacleFinder
 {
 private:
     int16_t invalidDistance;
+    uint16_t maxObstacleWidth;
 
     std::vector<DataPoint> obstacles;
 
 public:
-    explicit ObstacleFinder(int16_t);
+    explicit ObstacleFinder(int16_t,uint16_t = 0);
 
     const std::vector<DataPoint>& findObstacles(const std::vector<DataPoint>&);
 };

@@ -77,8 +77,6 @@ bool UST10LX::scan()
         return(false);
     }
 
-    // Wait for data to be sent then read it
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     if(!read())
     {
         return(false);
