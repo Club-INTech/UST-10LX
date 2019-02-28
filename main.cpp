@@ -43,7 +43,7 @@ int main() {
     std::cout << "Starting scanning and sending of data" << std::endl;
 
 
-    ObstacleFinder finder = ObstacleFinder(UST10LX::dataError,100);
+    ObstacleFinder finder = ObstacleFinder(UST10LX::dataError,100,20000.0f);
 
     std::string dataOutput;
     std::string messageInput;

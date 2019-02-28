@@ -5,15 +5,18 @@
 #include "ObstacleFinder.h"
 
 
-ObstacleFinder::ObstacleFinder(int16_t invalidDistance, uint16_t maxWidth)
+ObstacleFinder::ObstacleFinder(int16_t invalidDistance, uint16_t maxWidth, float_t maxSlope)
 {
     this->invalidDistance = invalidDistance;
     maxObstacleWidth = maxWidth;
+    maxLocalSlope = maxSlope;
 }
 
 /**
- * Detects edges between invalidDistance and other data. Returned obstacles are polar points with DataPoint.distance
- * being the mean distance of all points in the obstacle and DataPoint.angle being the middle of the obstacle.
+ * Detects edges between invalidDistance and other data and with local slope computation.
+ * Obstacles that are too large can be split in multiple smaller obstacles.
+ * <br>Returned obstacles are polar points with DataPoint.distance being the mean distance of all points in the obstacle
+ * and DataPoint.angle being the middle of the obstacle.
  * @brief Finds obstacles in a data set by edge detection
  * @param dataPoints to analyze
  * @returns Reference to vector of found obstacles
@@ -39,9 +42,12 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
         }
         else if(dataPoints.at(i).distance != invalidDistance && inObstacle)     // If we are in an obstacle and there is valid data
         {
-            totalDistance += dataPoints.at(i).distance;                         // Add the distance to the current sum
+            // Compute the local slope in order to detect obstacle edges
+            float_t localSlope = std::abs((int)(dataPoints.at(i).distance - dataPoints.at(i - 1).distance))/
+                                                          (dataPoints.at(i).angle - dataPoints.at(i-1).angle);
 
-            if(i-startIndex == maxObstacleWidth)                                // If the obstacle is too large, split it
+            // If the obstacle is too large or if there is an obstacle edge, split it
+            if(i-startIndex == maxObstacleWidth || (maxLocalSlope != 0 && localSlope >= maxLocalSlope))
             {
                 endIndex = i;
 
@@ -57,6 +63,10 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
                 // Start a new obstacle right away
                 startIndex = i;
                 totalDistance = 0;
+            }
+            else                                                                // If there is no reason to split
+            {
+                totalDistance += dataPoints.at(i).distance;                     // Add the distance to the current sum
             }
         }
         else if(dataPoints.at(i).distance == invalidDistance && inObstacle)     // If there is no more valid data ...
