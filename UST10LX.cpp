@@ -3,6 +3,7 @@
 //
 
 #include "UST10LX.h"
+#include "ObstacleFinder.h"
 
 /**
  * Constructor with optional argument to set angle offset
@@ -116,7 +117,6 @@ bool UST10LX::scan()
     m_lastScan.fill(-1);
     auto insertDistancePosition = m_lastScan.begin();
     auto insertDataPointPosition = m_dataPointScan.begin();
-
     // Loop through 3-bytes block, each one being an encoded data point
     for(uint16_t i = 0;i<m_receiveBuffer.size();i+=3)
     {
@@ -126,13 +126,22 @@ bool UST10LX::scan()
         if(tmpValue < minDistance || tmpValue > maxDistance)
         {
             tmpValue = dataError;
+            continue; // shh, no errors, only dreams now
+        }
+
+
+        float angle = ((i/3.0f)*0.25f+m_angleOffset)*degreeToRadian;
+
+        const float angleRange = (90+10)*2 / 180.0f * PI;
+        if(angle < -angleRange / 2 || angle > angleRange / 2) {
+            continue;
         }
 
         *insertDistancePosition = tmpValue;
         ++insertDistancePosition;
 
         insertDataPointPosition->distance = tmpValue;
-        insertDataPointPosition->angle = ((i/3.0f)*0.25f+m_angleOffset)*degreeToRadian;
+        insertDataPointPosition->angle = angle;
         ++insertDataPointPosition;
     }
 

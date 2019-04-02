@@ -3,6 +3,7 @@
 //
 
 #include "Client.h"
+#include "ObstacleFinder.h"
 
 const std::string Client::messageHeader = {0x21,0x21};
 const std::string Client::messageTerminator = "\n";

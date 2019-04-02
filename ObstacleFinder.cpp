@@ -8,7 +8,7 @@
 ObstacleFinder::ObstacleFinder(int16_t invalidDistance, uint16_t maxWidth, float_t maxSlope)
 {
     this->invalidDistance = invalidDistance;
-    maxObstacleWidth = maxWidth;
+    maxDistanceBetweenObstacles = maxWidth;
     maxLocalSlope = maxSlope;
 }
 
@@ -18,81 +18,35 @@ ObstacleFinder::ObstacleFinder(int16_t invalidDistance, uint16_t maxWidth, float
  * <br>Returned obstacles are polar points with DataPoint.distance being the mean distance of all points in the obstacle
  * and DataPoint.angle being the middle of the obstacle.
  * @brief Finds obstacles in a data set by edge detection
- * @param dataPoints to analyze
+ * @param unfilteredData points to analyze
  * @returns Reference to vector of found obstacles
  */
-const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<DataPoint>& dataPoints)
+const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<DataPoint>& unfilteredData)
 {
     obstacles.clear();
-
-    bool inObstacle = false;
-    uint16_t startIndex = 0;
-    uint16_t endIndex = 0;
-    uint32_t totalDistance = 0;
-
-    for(uint16_t i = 0;i<dataPoints.size();i++)
+    filteredData.clear();
+    float maxDistanceSq = maxDistanceBetweenObstacles*maxDistanceBetweenObstacles;
+    obstacles.push_back(unfilteredData.at(0));
+    for(uint16_t i = 1;i<unfilteredData.size();i++)
     {
-        if(dataPoints.at(i).distance != invalidDistance && !inObstacle)         // If there is valid data and we are not in an obstacle...
-        {
-            startIndex = i;                                                     // ... set the new beginning of the obstacle ...
-            endIndex = i;
-            inObstacle = true;
+        DataPoint point = unfilteredData.at(i);
 
-            totalDistance = dataPoints.at(i).distance;                          // ... count the first point of the obstacle;
-        }
-        else if(dataPoints.at(i).distance != invalidDistance && inObstacle)     // If we are in an obstacle and there is valid data
-        {
-            // Compute the local slope in order to detect obstacle edges
-            float_t localSlope = std::abs((int)(dataPoints.at(i).distance - dataPoints.at(i - 1).distance))/
-                                                          (dataPoints.at(i).angle - dataPoints.at(i-1).angle);
-
-            // If the obstacle is too large or if there is an obstacle edge, split it
-            if(i-startIndex == maxObstacleWidth || (maxLocalSlope != 0 && localSlope >= maxLocalSlope))
-            {
-                endIndex = i;
-
-                // Compute the mean of the start and end angles
-                float meanAngle = (dataPoints.at(startIndex).angle+dataPoints.at(endIndex).angle)/2.0f;
-
-                // Compute the mean of the distances
-                int16_t meanDistance = totalDistance/(endIndex-startIndex);
-
-                // Add them to distance vector
-                obstacles.push_back(DataPoint{meanAngle,meanDistance});
-
-                // Start a new obstacle right away
-                startIndex = i;
-                totalDistance = 0;
-            }
-            else                                                                // If there is no reason to split
-            {
-                totalDistance += dataPoints.at(i).distance;                     // Add the distance to the current sum
+        DataPoint* closest = &obstacles.at(0);
+        // find closest
+        for (int j = 1; j < obstacles.size(); ++j) {
+            if(distance(*closest, point) >= distance(obstacles.at(j), point)) { // on a trouvé un point plus proche
+                closest = &obstacles.at(j);
             }
         }
-        else if(dataPoints.at(i).distance == invalidDistance && inObstacle)     // If there is no more valid data ...
-        {
-            endIndex = i;                                                       // ... Save the end of the obstacle
-            inObstacle = false;
 
-            // Compute the mean of the start and end angles
-            float meanAngle = (dataPoints.at(startIndex).angle+dataPoints.at(endIndex-1).angle)/2.0f;
-
-            // Compute the mean of the distances
-            int16_t meanDistance = totalDistance/(endIndex-startIndex);
-
-            // Add them to distance vector
-            obstacles.push_back(DataPoint{meanAngle,meanDistance});
+        if(!closest || distance(*closest, point) >= maxDistanceSq) { // no point to link to OR closest is too far away
+            obstacles.push_back(point);
         }
-    }
-
-    // If we were in an obstacle at the end of the data set, add it
-    if(inObstacle)
-    {
-        endIndex = dataPoints.size();
-        float meanAngle = (dataPoints.at(startIndex).angle+dataPoints.at(endIndex-1).angle)/2.0f;
-        int16_t meanDistance = totalDistance/(endIndex-startIndex);
-        obstacles.push_back(DataPoint{meanAngle,meanDistance});
     }
 
     return(obstacles);
+}
+
+const float ObstacleFinder::distance(const DataPoint& a, const DataPoint& b) {
+    return a.distance*a.distance + b.distance*b.distance - 2 * a.distance * b.distance * cos(b.angle-a.angle);
 }

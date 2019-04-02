@@ -43,7 +43,7 @@ int main() {
     std::cout << "Starting scanning and sending of data" << std::endl;
 
 
-    ObstacleFinder finder = ObstacleFinder(UST10LX::dataError,100,20000.0f);
+    ObstacleFinder finder = ObstacleFinder(UST10LX::dataError,300,20000.0f);
 
     std::string dataOutput;
     std::string messageInput;
@@ -64,7 +64,7 @@ int main() {
 
         highLevel.send(dataOutput);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         // Read eventual incoming messages and change mode accordingly
         if(highLevel.receive(messageInput,false))
@@ -79,7 +79,7 @@ int main() {
             }
             else
             {
-                std::cout << "Unrecognized message" << std::endl;
+                std::cout << "Unrecognized message: '" << messageInput << "'" << std::endl;
                 std::cout << messageInput << std::endl;
             }
         }

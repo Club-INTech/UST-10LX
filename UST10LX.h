@@ -55,7 +55,7 @@ private:
     static constexpr uint16_t port = 10940;
 
     /// In mm ; Distance under which a point is considered to be an error
-    static constexpr uint16_t minDistance = 21;
+    static constexpr uint16_t minDistance = 150;// 21;
 
     /// In mm ; Distance above which a point is considered to be at infinity
     static constexpr uint16_t maxDistance = 3000;
