@@ -11,11 +11,8 @@ else
 fi
 
 echo "Lancement du build"
-echo "cd build/"
-cd build/
-echo "Now in " $PWD
-echo "cmake -S ../src/ -B ./"
-cmake -S ../src/ -B ./
+echo "cmake -S ./ -B build/"
+cmake -S ./ -B build/
 echo "make"
 if make; then
 	echo "Succès! Résultat dans build/LiDAR_UST10LX"
