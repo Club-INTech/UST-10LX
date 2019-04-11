@@ -13,6 +13,9 @@ fi
 echo "Lancement du build"
 echo "cmake -S ./ -B build/"
 cmake -S ./ -B build/
+
+echo "cd build"
+cd build
 echo "make"
 if make; then
 	echo "Succès! Résultat dans build/LiDAR_UST10LX"
