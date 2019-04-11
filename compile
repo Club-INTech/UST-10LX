@@ -12,7 +12,7 @@ fi
 
 echo "Lancement du build"
 echo "cmake -S ./ -B build/"
-cmake -S ./ -B build/
+cmake -S ./ -B./build/
 
 echo "cd build"
 cd build
