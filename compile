@@ -1,0 +1,24 @@
+#! /bin/bash
+
+printf "Vérification que CMake est bien installé... "
+
+if command -v cmake >/dev/null; then
+	echo "CMake installé!"
+else
+	echo "CMake non installé, lancement de APT"
+	echo "sudo apt install cmake"
+	sudo apt install cmake
+fi
+
+echo "Lancement du build"
+echo "cd build/"
+cd build/
+echo "Now in " $PWD
+echo "cmake -S ../src/ -B ./"
+cmake -S ../src/ -B ./
+echo "make"
+if make; then
+	echo "Succès! Résultat dans build/LiDAR_UST10LX"
+else
+	echo "Echec"
+fi
