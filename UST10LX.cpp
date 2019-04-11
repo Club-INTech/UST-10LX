@@ -117,6 +117,7 @@ bool UST10LX::scan()
     m_lastScan.fill(-1);
     auto insertDistancePosition = m_lastScan.begin();
     auto insertDataPointPosition = m_dataPointScan.begin();
+    m_dataPointCount = 0;
     // Loop through 3-bytes block, each one being an encoded data point
     for(uint16_t i = 0;i<m_receiveBuffer.size();i+=3)
     {
@@ -143,7 +144,11 @@ bool UST10LX::scan()
         insertDataPointPosition->distance = tmpValue;
         insertDataPointPosition->angle = angle;
         ++insertDataPointPosition;
+
+        m_dataPointCount++;
     }
+
+    m_dataPointScan.resize(m_dataPointCount);
 
     return(true);
 }
@@ -216,4 +221,9 @@ bool UST10LX::write(const std::string& message)
     uint16_t sentBytes = ::write(m_socketID,finalMessage.c_str(),finalMessage.size());
 
     return(sentBytes == finalMessage.size());
+}
+
+const uint32_t UST10LX::getDataPointCount()
+{
+    return m_dataPointCount;
 }

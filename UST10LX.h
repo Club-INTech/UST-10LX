@@ -45,6 +45,7 @@ public:
 
     const std::vector<DataPoint>& getDataPoints();
     const std::array<int16_t,dataSize>& getScan();
+    const uint32_t getDataPointCount();
 
 private:
     int16_t charDecode(uint16_t,uint8_t);
@@ -70,6 +71,8 @@ private:
     std::array<int16_t,dataSize> m_lastScan;
 
     std::vector<DataPoint> m_dataPointScan;
+
+    uint32_t m_dataPointCount;
 };
 
 
