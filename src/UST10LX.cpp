@@ -133,7 +133,6 @@ bool UST10LX::scan()
             continue; // shh, no errors, only dreams now
         }
 
-
         float angle = ((i/3.0f)*0.25f+m_angleOffset)*degreeToRadian;
 
         const float angleRange = (90+10)*2 / 180.0f * PI;
