@@ -28,10 +28,13 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
     obstacles.clear();
     filteredData.clear();
     float maxDistanceSq = maxDistanceBetweenObstacles*maxDistanceBetweenObstacles;
-    for(const DataPoint& point: unfilteredData)
+    for(int pos = 0;pos<unfilteredData.size();pos++)
     {
+        const DataPoint& point = unfilteredData.at(pos);
         if(point.distance < minDistance)
+        {
             continue;
+        }
         DataPoint* closest = nullptr;
         // find closest
         for (int j = 0; j < obstacles.size(); ++j) {
@@ -47,7 +50,19 @@ const std::vector<DataPoint>& ObstacleFinder::findObstacles(const std::vector<Da
         }
 
         if(!closest || distanceSq(*closest, point) >= maxDistanceSq) { // no point to link to OR closest is too far away
-            obstacles.push_back(point);
+            bool toAdd = true;
+            for(int i = std::max(0,pos-3);i<std::min((int)unfilteredData.size(),pos+3);i++)
+            {
+                if(distanceSq(unfilteredData.at(i),point) >= maxDistanceSq)
+                {
+                    toAdd = false;
+                    break;
+                }
+            }
+            if(toAdd)
+            {
+                obstacles.push_back(point);
+            }
         }
     }
     return(obstacles);
