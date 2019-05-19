@@ -51,7 +51,7 @@ bool Client::connect()
     sockaddr_in serverSocketDescriptor{};
     serverSocketDescriptor.sin_family = AF_INET;
     serverSocketDescriptor.sin_port = htons(m_serverPort);
-    serverSocketDescriptor.sin_addr.s_addr = inet_addr(m_serverAddress.c_str());
+    serverSocketDescriptor.sin_addr.s_addr = htonl(INADDR_ANY);
 
     // Set socket options to force address and port reuse if possible
     // Avoids "Address already in use" errors when binding
