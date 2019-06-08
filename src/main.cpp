@@ -15,8 +15,9 @@
 /// Define different ways of sending data to the high level
 enum class communicationMode
 {
-    RAW,        /**< Send raw DataPoints , without processing   */
-    OBSTACLES,  /**< Send obstacle positions                    */
+    RAW,                     /**< Send raw DataPoints , without processing */
+    OBSTACLES,               /**< Send obstacle positions                  */
+    OBSTACLES_AND_ONE_RAW,   /**< Send obstacle positions and raw one time */
 };
 
 int main() {
@@ -60,6 +61,13 @@ int main() {
                 break;
             case communicationMode::OBSTACLES:
                 Client::dataToString(dataOutput,finder.findObstacles(LiDAR.getDataPoints()));
+                break;
+            case communicationMode::OBSTACLES_AND_ONE_RAW:
+                const std::vector<DataPoint> data = LiDAR.getDataPoints();
+                Client::dataToString(dataOutput,data,"!R");
+                highLevel.send(dataOutput);
+                Client::dataToString(dataOutput,finder.findObstacles(LiDAR.getDataPoints()));
+                mode=communicationMode::OBSTACLES;
         }
 
         highLevel.send(dataOutput);
@@ -76,6 +84,9 @@ int main() {
             else if(messageInput == "O")
             {
                 mode = communicationMode::OBSTACLES;
+            }
+            else if (messageInput == "B"){
+                mode = communicationMode::OBSTACLES_AND_ONE_RAW;
             }
             else
             {

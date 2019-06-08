@@ -30,6 +30,7 @@ public:
 
     explicit operator bool();
 
+    static void dataToString(std::string&,const std::vector<DataPoint>&, const std::string&);
     static void dataToString(std::string&,const std::vector<DataPoint>&);
     static std::string dataToString(const std::vector<DataPoint>&);
 private:

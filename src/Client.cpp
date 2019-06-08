@@ -207,19 +207,18 @@ void Client::clientDisconnect()
     m_clientSocket = -1;
 }
 
-
-
 /**
  * String is formed by concatenation of all obstacles separated by a ObstacleFinder::pointSeparator.<br>
  * Different sets of coordinates are separated by a ObstacleFinder::coordinatesSeparator<br>
  * Message header and terminator are inserted at the beginning and at the end respectively
  * @brief Converts obstacle vector to a string which can be sent to the High Level
  * @param dataToConvert vector of DataPoints that will be converted to std::string
+ * @param header headre placed before the data
  */
-void Client::dataToString(std::string& dataString,const std::vector<DataPoint>& dataToConvert)
+void Client::dataToString(std::string& dataString,const std::vector<DataPoint>& dataToConvert, const std::string& header)
 {
     dataString.clear();
-    dataString.append(messageHeader);
+    dataString.append(header);
     for(const DataPoint& point: dataToConvert)
     {
         dataString += std::to_string(point.distance);
@@ -230,6 +229,18 @@ void Client::dataToString(std::string& dataString,const std::vector<DataPoint>& 
 
     dataString.pop_back();      // Removes the last pointSeparator
     dataString.append(messageTerminator);
+}
+
+/**
+ * String is formed by concatenation of all obstacles separated by a ObstacleFinder::pointSeparator.<br>
+ * Different sets of coordinates are separated by a ObstacleFinder::coordinatesSeparator<br>
+ * Message header and terminator are inserted at the beginning and at the end respectively
+ * @brief Converts obstacle vector to a string which can be sent to the High Level
+ * @param dataToConvert vector of DataPoints that will be converted to std::string
+ */
+void Client::dataToString(std::string& dataString,const std::vector<DataPoint>& dataToConvert)
+{
+    dataToString(dataString, dataToConvert, messageHeader);
 }
 
 /**
