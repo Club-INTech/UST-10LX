@@ -30,13 +30,13 @@ int main() {
     UST10LX LiDAR = UST10LX(-135);
 
     std::cout << "Trying to connect to UST10LX" << std::endl;
-    LiDAR.connect("192.168.0.10");
+    LiDAR.connect("192.168.0.50");
 
     while(!LiDAR)
     {
         std::cout << "Retrying connection in 5 seconds" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(5));
-        LiDAR.connect("192.168.0.10");
+        LiDAR.connect("192.168.0.50");
     }
 
     std::cout << "Connection successful !" << std::endl;
